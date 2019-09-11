@@ -24,7 +24,9 @@ def get_df_tracker(file = "./tracker_info/sample_data/beamSpot.txt"):
     df["counts"] = df["counts"].astype('float')
     df["radial"] = df["radial"].astype('float')
     df["vertical"] = df["vertical"].astype('float')
-
+    
+    df.reset_index(inplace=True)
+    
     return df
 
 
