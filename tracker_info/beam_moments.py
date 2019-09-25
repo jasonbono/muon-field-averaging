@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 
 
+
+
 def get_df_tracker(file = "./tracker_info/sample_data/beamSpot.txt"):
     names=['radial', 'vertical', 'counts']
     df = pd.read_csv(file, sep=" ",names=names)
