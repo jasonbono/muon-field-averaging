@@ -1,81 +1,58 @@
-# MuonConvolution
+# Muon-Weighted Magnetic Field Averaging
 
+Analysis code from the **Fermilab Muon g-2 experiment**, the collaboration awarded the **2026 Breakthrough Prize in Fundamental Physics**. This repository computes the average magnetic field experienced by the muon beam, one of the inputs needed to extract the muon's anomalous magnetic moment.
 
-We have particles called muons moving through a magnetic field. The field changes with location and time. The muons' trajectories are complex. **We want to know the average magnetic field experienced by the muons.** 
+> **About this snapshot.** This is real collaboration analysis code I wrote in 2019 and 2020, prepared here for public viewing. Internal database connection details have been redacted and the experiment's datasets are not included, so the notebooks illustrate the methods rather than run end to end. The science and the structure are described below.
 
-(An analogy is finding the average water temperature experienced by a school of :fish: as they swim  through various depths and currents, and throughout the day.)
+## The problem
 
-### How: A (very) simplified explanation
-Ultimately, we get 2D projections of the muon distribution, eg:
-![image](https://drive.google.com/uc?export=view&id=174tx8yv8ITmqFdtiiO3TUytxuUOKJIFe)
+Muons travel through a magnetic field that varies in space and time, on complicated trajectories. The measurement needs the field *the muons actually experience*, which means the field weighted by where the muons are.
 
-And 2D projections of the magnetic field, eg:
-![image](https://drive.google.com/uc?export=view&id=1ZCSGLTyMzHMvvA7AZktWK0XT2pD5XG3O)
+An analogy: the average water temperature felt by a school of fish as they swim through changing depths and currents over the course of a day. You cannot just average the temperature of the pond. You have to weight it by where the fish actually spend their time.
 
-And we take the element-wise product of the two distributions above to get a geometric representation of where contributions to the averaged field are coming from, as shown below:
-![image](https://drive.google.com/uc?export=view&id=1U3g-nt_A_yrLvpwta9AB_yEA0DqWuBzw)
-We integrate the distribution above to get the average field experienced by the muons!
+Concretely:
 
-### Why
-We can combine the average magnetic field with information on how the muons behave in that magnetic field to help answer basic questions about how all matter behaves! 
+1. Build a 2D distribution of the muon beam from tracker data:
 
+   ![muon distribution](docs/images/muon-distribution.png)
 
-## Getting Started
-These instructions will help get you a copy of the project up and running on your local machine for development and testing purposes. 
+2. Build a 2D map of the magnetic field from the field team's multipole expansions:
 
-### Prerequisites
+   ![field distribution](docs/images/field-distribution.png)
 
-- python 3
-- jupyter (tested on version 5.7.8)
-- numpy (tested on version 1.17.0)
-- pandas (tested on version 0.25.0)
-- psycopg2 (tested on version 2.8.2)
-- optional : pyroot (for reading of ROOT data in python. Alternatively, you can reformat ROOT data via C++)
-- optional: matplotlib
+3. Take the element-wise product to see where the contributions to the average come from, then integrate to get the muon-weighted average field:
 
-Some of the required data is in the gm2 online database. To manually browse the database via terminal, try:
+   ![field and muon product](docs/images/field-muon-product.png)
 
-	psql -U db_user -d gm2_db -h localhost -p 5434
+## What I built
 
+- **Two complementary averaging methods.** A direct spatial "grid" method and a "moments" method, with a reusable library (`field_info/`, `synthesis/`) to resample the field, beam, and detector-acceptance distributions onto common grids. Start with [`grid_tutorial.ipynb`](grid_tutorial.ipynb) and [`moments_tutorial.ipynb`](moments_tutorial.ipynb).
+- **Systematic uncertainty studies** (`analysis/systematics/`). How the averaged field shifts under beam motion, closed-orbit distortions, and ctag- and field-related errors. This is what turns a number into a number with a defensible uncertainty.
+- **A Run-1 pipeline** (`analysis/run1_pipeline/`) that computed the muon-weighted field and its error across the full Run-1 dataset. An earlier version produced results presented at a Fermilab collaboration meeting in fall 2019.
+- **Data plumbing** (`muon_info/`, `tracker_info/`). Code to pull muon counts and timing from the experiment's database and to read and transform the field and tracker inputs into a common format.
 
+## Repository layout
 
-### Contributing
+| Path | What it is |
+| --- | --- |
+| `grid_tutorial.ipynb`, `moments_tutorial.ipynb` | the two averaging methods, explained step by step |
+| `field_info/`, `synthesis/` | the reusable grid and resampling library |
+| `tracker_info/` | beam-moment extraction and coordinate transforms |
+| `muon_info/` | database access for muon timing and counts |
+| `analysis/systematics/` | systematic-uncertainty evaluations |
+| `analysis/run1_pipeline/` | the full-Run-1 field-averaging pipeline |
+| `background/calculation/` | derivation notes for the averaging method |
 
-1. Fork it (<https://github.com/jasonbono/MuonConvolution/fork>)
-2. Create your feature branch (`git checkout -b feature/fooBar`)
-3. Commit your changes (`git commit -am 'Add some fooBar'`)
-4. Push to the branch (`git push origin feature/fooBar`)
-5. Create a new Pull Request
+The `.py` modules are the reusable pieces. The notebooks demonstrate and validate them. Built with Python 3, NumPy, pandas, Matplotlib, and psycopg2.
 
+## About the prize
 
-### Your first task: tutorials!
+The 2026 Breakthrough Prize in Fundamental Physics was awarded to the Muon g-2 collaborations at CERN, Brookhaven, and Fermilab, recognizing three generations of the experiment and the final Fermilab measurement of the muon's anomalous magnetic moment to 127 parts per billion. I was a research fellow on the Fermilab experiment and a member of the collaboration. This repository is one slice of that work.
 
-The foundation of this analysis is the "grid" and "moments" methods. If you can run and understand the notebooks `~/grid_tutorial.ipynb` and `~/moments_tutorial.ipynb`, and understand the libs that they use, then you should be able to develop freely from there
+## Author
 
-### A suggested second task: muon position error evaluation
+Jason Bono
 
-Now that you get the basics, check out `~/analysis/systematics/beam_motion.ipynb` to see a foundational method for evaluating systematic uncertainty.
+## License
 
-Similarly, see `~/analysis/systematics/close_orbit_distortions.ipynb` to see how closed orbit distortions are handeled.
-
-### A suggested third task: statistical and field error propegation
-
-There is no one correct way to propegate field error for this project. To see my approach, check out `/analysis/run1_pipeline/analyze_all_runs.ipynb`
-
-Also, check out my incomplete note at `background/calculation/calculation.pdf` for some ideas. *Warning* Some of the note has false reasoning and incorrect conclusions!
-
-
-
-## Authors
-
-* **Jason Bono** - *Initial work* - [JasonBono](https://github.com/JasonBono)
-
- 
-
-	
-
-
-
-
-
-
+Released under the MIT License. See [LICENSE](LICENSE).
