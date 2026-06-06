@@ -8,8 +8,6 @@ Analysis code from the **Fermilab Muon g-2 experiment**, the collaboration award
 
 Muons travel through a magnetic field that varies in space and time, on complicated trajectories. The measurement needs the field *the muons actually experience*, which means the field weighted by where the muons are.
 
-An analogy: the average water temperature felt by a school of fish as they swim through changing depths and currents over the course of a day. You cannot just average the temperature of the pond. You have to weight it by where the fish actually spend their time.
-
 Concretely:
 
 1. Build a 2D distribution of the muon beam from tracker data:
